@@ -1,0 +1,14 @@
+<!--
+  This template loads for the 'tab.product-detail' state (app.js)
+  'product' is a $scope variable created in the ProductsCtrl controller (controllers.js)
+  The ProductsCtrl pulls data from the Product service (service.js)
+  The Products service returns an array of product data
+-->
+<ion-view view-title="{{product.name}}">
+  <ion-content class="padding">
+    <img ng-src="{{product.img}}" style="width: 64px; height: 64px">
+    <p>
+      {{product.desc}}<br />{{product.price}}
+    </p>
+  </ion-content>
+</ion-view>
