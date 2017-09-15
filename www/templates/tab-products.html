@@ -1,8 +1,8 @@
 <ion-view view-title="Products">
   <ion-content>
     <ion-list>
-      <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="product in products" type="item-text-wrap" href="#/tab/products/{{product.id}}">
-        <img ng-src="{{product.img}}">
+      <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="product in products" type="item-text-wrap" href="#/tab/products/{{product.itemId}}">
+        <img ng-src="http://web-ui-coolstore-test-admin.ocp3.skunkhenry.com/app/imgs/{{product.name}}.jpg" style="width: 64px; height: 64px">
         <h2>{{product.name}}</h2>
         <p>{{product.desc}}, {{product.price}}</p>
         <i class="icon ion-chevron-right icon-accessory"></i>

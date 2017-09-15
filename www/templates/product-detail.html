@@ -6,9 +6,12 @@
 -->
 <ion-view view-title="{{product.name}}">
   <ion-content class="padding">
-    <img ng-src="{{product.img}}" style="width: 64px; height: 64px">
+    <a class="button" ng-click="showImage('{{product.name}}')">
+      <img ng-src="http://web-ui-coolstore-test-admin.ocp3.skunkhenry.com/app/imgs/{{product.name}}.jpg" style="width: 282px; height: 211px">
+    </a>
     <p>
-      {{product.desc}}<br />{{product.price}}
+      {{product.desc}}<br />${{product.price}}
     </p>
+    
   </ion-content>
 </ion-view>

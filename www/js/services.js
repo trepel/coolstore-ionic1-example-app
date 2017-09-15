@@ -1,37 +1,74 @@
 angular.module('starter.services', [])
 
-.factory('Products', function() {
-  // TODO use a resource here that returns a JSON array
+.factory('Products', function($http) {
+  var url = 'http://catalog-coolstore-test-admin.ocp3.skunkhenry.com/api/products';
 
-  // Some fake testing data
-  var products = [{
-    id: 123,
-    name: 'Fedora Hat',
-    desc: 'Red Fedora Hat',
-    price: 34.99,
-    img: 'img/hat.png'
-  }, {
-    id: 234,
-    name: 'Red Hat Bottle',
-    desc: 'Red Hat Branded Bottle',
-    price: 65.99,
-    img: 'img/bottle.png'
-  }];
+  // TODO use a URL above here instead of hard-coded data
+  // hard-coded data till CORS issue is fixed on server side
+  var products = [
+    {
+      "itemId": "329299",
+      "name": "Red Fedora",
+      "desc": "Official Red Hat Fedora",
+      "price": 34.99
+    },
+    {
+      "itemId": "329199",
+      "name": "Forge Laptop Sticker",
+      "desc": "JBoss Community Forge Project Sticker",
+      "price": 8.5
+    },
+    {
+      "itemId": "165613",
+      "name": "Solid Performance Polo",
+      "desc": "Moisture-wicking, antimicrobial 100% polyester design wicks for life of garment. No-curl, rib-knit collar; special collar band maintains crisp fold; three-button placket with dyed-to-match buttons; hemmed sleeves; even bottom with side vents; Import. Embroidery. Red Pepper.",
+      "price": 17.8
+    },
+    {
+      "itemId": "165614",
+      "name": "Ogio Caliber Polo",
+      "desc": "Moisture-wicking 100% polyester. Rib-knit collar and cuffs; Ogio jacquard tape inside neck; bar-tacked three-button placket with Ogio dyed-to-match buttons; side vents; tagless; Ogio badge on left sleeve. Import. Embroidery. Black.",
+      "price": 28.75
+    },
+    {
+      "itemId": "165954",
+      "name": "16 oz. Vortex Tumbler",
+      "desc": "Double-wall insulated, BPA-free, acrylic cup. Push-on lid with thumb-slide closure; for hot and cold beverages. Holds 16 oz. Hand wash only. Imprint. Clear.",
+      "price": 6
+    },
+    {
+      "itemId": "444434",
+      "name": "Pebble Smart Watch",
+      "desc": "Smart glasses and smart watches are perhaps two of the most exciting developments in recent years. ",
+      "price": 24
+    },
+    {
+      "itemId": "444435",
+      "name": "Oculus Rift",
+      "desc": "The world of gaming has also undergone some very unique and compelling tech advances in recent years. Virtual reality, the concept of complete immersion into a digital universe through a special headset, has been the white whale of gaming and digital technology ever since Geekstakes Oculus Rift GiveawayNintendo marketed its Virtual Boy gaming system in 1995.Lytro",
+      "price": 106
+    },
+    {
+      "itemId": "444436",
+      "name": "Lytro Camera",
+      "desc": "Consumers who want to up their photography game are looking at newfangled cameras like the Lytro Field camera, designed to take photos with infinite focus, so you can decide later exactly where you want the focus of each image to be. ",
+      "price": 44.3
+    }
+  ];
 
   return {
     all: function() {
       return products;
+
     },
-    // remove: function(product) {
-    //   products.splice(products.indexOf(product), 1);
-    // },
     get: function(productId) {
+      // TODO there must be a nicer way that for loop for this
+      var fakeName = "";
       for (var i = 0; i < products.length; i++) {
-        if (products[i].id === parseInt(productId)) {
+        if (products[i].itemId === productId) {
           return products[i];
         }
       }
-      return null;
     }
-  };
+  }
 });
