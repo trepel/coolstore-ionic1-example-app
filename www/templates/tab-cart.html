@@ -1,8 +1,18 @@
 <ion-view view-title="Shopping Cart">
   <ion-content class="padding">
-    <h2>Shopping Cart</h2>
-    <p>
-      TODO: not yet implemented.
-    </p>
+    <h3 class="panel-title">Shopping Summary</h3>
+    <ion-list>
+      <ion-item>Cart Total: {{subtotal | currency}}</ion-item>
+      <ion-item>Promotional Item Savings: {{cart.cartItemPromoSavings | currency}}</ion-item>
+      <ion-item>Subtotal: {{cart.cartItemTotal | currency}}</ion-item>
+      <ion-item>Shipping: {{cart.shippingTotal | currency}}</ion-item>
+      <ion-item>Promotional Shipping Savings: {{cart.shippingPromoSavings | currency}}</ion-item>
+      <ion-item>Total Order Amount: <strong>{{cart.cartTotal | currency}}</strong></ion-item>
+    </ion-list>
+
+    <a ng-href="#/tab/cart/items" class="btn btn-default btn-lg">Items in cart</a>
+    &nbsp;
+    <a ng-href="#/" class="btn btn-default btn-lg">Return to Store</a>
+
   </ion-content>
 </ion-view>

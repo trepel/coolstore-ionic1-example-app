@@ -21,6 +21,11 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
       StatusBar.styleDefault();
     }
   });
+
+  var suffix = 'admin-p';
+  localStorage.setItem('catalogBaseUrl', 'http://catalog-coolstore-test-' + suffix + '.ocp3.skunkhenry.com/api/products');
+  localStorage.setItem('cartBaseUrl', 'http://cart-coolstore-test-' + suffix + '.ocp3.skunkhenry.com/api/cart');
+  localStorage.setItem('imgBaseUrl', 'http://web-ui-coolstore-test-' + suffix + '.ocp3.skunkhenry.com/app/imgs');
 })
 
 .config(function($stateProvider, $urlRouterProvider) {
@@ -43,6 +48,15 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
       views: {
         'tab-cart': {
           templateUrl: 'templates/tab-cart.html',
+          controller: 'CartCtrl'
+        }
+      }
+    })
+    .state('tab.cart-items', {
+      url: '/cart/items',
+      views: {
+        'tab-cart': {
+          templateUrl: 'templates/tab-cart-items.html',
           controller: 'CartCtrl'
         }
       }

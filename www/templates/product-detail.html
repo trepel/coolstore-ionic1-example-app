@@ -6,12 +6,20 @@
 -->
 <ion-view view-title="{{product.name}}">
   <ion-content class="padding">
-    <a class="button" ng-click="showImage('{{product.name}}')">
-      <img ng-src="http://web-ui-coolstore-test-admin.ocp3.skunkhenry.com/app/imgs/{{product.name}}.jpg" style="width: 282px; height: 211px">
+    <a class="button" ng-click="showImage(product.name)">
+      <img ng-src="{{imageSrc}}" style="width: 282px; height: 211px">
     </a>
     <p>
-      {{product.desc}}<br />${{product.price}}
+      {{product.desc}}<br />{{product.price | currency}}
     </p>
-    
+    <select name="quantity" ng-model="quantitySelected" ng-change="quantityChanged(quantitySelected)" id="quantity">
+      <option ng-selected="quantity == 1">1</option>
+      <option ng-selected="quantity == 2">2</option>
+      <option ng-selected="quantity == 3">3</option>
+      <option ng-selected="quantity == 4">4</option>
+      <option ng-selected="quantity == 5">5</option>
+    </select>
+    <button ng-click="addToCart()" class="btn btn-default">Add To Cart</button>
+        
   </ion-content>
 </ion-view>

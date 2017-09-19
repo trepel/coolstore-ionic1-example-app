@@ -1,0 +1,14 @@
+<ion-view view-title="Items in Cart">
+<ion-content>
+  <ion-list>
+    <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="item in cart.shoppingCartItemList" type="item-text-wrap">
+      <img ng-src="{{imgBaseUrl}}/{{item.product.name}}.jpg" style="width: 64px; height: 64px">
+      <h2>{{item.product.name}}</h2>
+      <p>{{item.product.desc}}</p>
+      <p>Quantity: {{item.quantity}}</p>
+      <button ng-click="actionButtons[0].actionFn('remove', item)">{{actionButtons[0].title}}</button>
+      <i class="icon ion-chevron-right icon-accessory"></i>
+    </ion-item>
+  </ion-list>
+</ion-content>
+</ion-view>
