@@ -4,6 +4,10 @@ This is example mobile application for [Coolstore](https://github.com/jbossdemoc
 
 Follow the documentation of these three frameworks (Ionic and Cordova in particular) to set up an environment for running the app either in emulator or in the browser.
 
+## Target the Coolstore backend
+
+To specify URLs for various Coolstore microservices this app talks to change the values in `www/js/app.js` file.
+
 ## Jump start
 - clone this repo and `cd` there
 - `npm install ionic cordova -g`
