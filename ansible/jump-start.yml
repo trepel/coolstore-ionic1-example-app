@@ -1,0 +1,20 @@
+---
+- hosts: local
+
+  tasks:
+
+    - name: "Install Ionic and Cordova NPM packages locally"
+      npm:
+        name: "{{item}}"
+        global: no
+        path: "{{playbook_dir}}/.."
+      with_items:
+        - cordova
+        - ionic
+
+    - name: "Execute `ionic serve` to run the app in the browser"
+      command:  "{{playbook_dir}}/../node_modules/ionic/bin/ionic serve"
+      async: 10
+      poll: 0
+
+
