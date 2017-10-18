@@ -13,3 +13,5 @@ To specify URLs for various Coolstore microservices this app talks to change the
 - `npm install ionic cordova -g`
 - `ionic serve`
 - it should open your browser with the app running
+
+Visit [NodeJS Download page](https://nodejs.org/en/download/) if you don't have `npm` installed.
