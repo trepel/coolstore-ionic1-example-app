@@ -5,7 +5,7 @@
 // the 2nd parameter is an array of 'requires'
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 
-.run(function($ionicPlatform) {
+.run(function($ionicPlatform, $http) {
   $ionicPlatform.ready(function() {
     if(window.cordova && window.cordova.plugins.Keyboard) {
       // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
@@ -22,10 +22,23 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
     }
   });
 
-  var suffix = 'admin-p';
-  localStorage.setItem('catalogBaseUrl', 'http://catalog-coolstore-test-' + suffix + '.ocp3.skunkhenry.com/api/products');
-  localStorage.setItem('cartBaseUrl', 'http://cart-coolstore-test-' + suffix + '.ocp3.skunkhenry.com/api/cart');
-  localStorage.setItem('imgBaseUrl', 'http://web-ui-coolstore-test-' + suffix + '.ocp3.skunkhenry.com/app/imgs');
+
+  var configUrl = 'js/config.json';
+  if(ionic.Platform.isAndroid()){
+    configUrl = "/android_asset/www/" + configUrl;
+  }
+
+  $http.get(configUrl)
+  .then(function(response){
+     var backendUrl = response.data.backend_url;
+     localStorage.setItem('catalogBaseUrl', 'http://catalog-coolstore-test-' + backendUrl + '/api/products');
+     localStorage.setItem('cartBaseUrl', 'http://cart-coolstore-test-' + backendUrl + '/api/cart');
+     localStorage.setItem('imgBaseUrl', 'http://web-ui-coolstore-test-' + backendUrl + '/app/imgs');
+
+  },function(error){
+    console.log(error);
+  });
+
 })
 
 .config(function($stateProvider, $urlRouterProvider) {
