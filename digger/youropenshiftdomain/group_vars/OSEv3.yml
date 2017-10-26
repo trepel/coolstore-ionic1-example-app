@@ -1,0 +1,3 @@
+oc_user: yourocuser
+oc_password: yourocpassword
+login_url: https://youropenshiftdomain:8443

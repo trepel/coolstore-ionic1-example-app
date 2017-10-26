@@ -1,0 +1,12 @@
+[OSEv3:children]
+master
+
+[OSEv3:vars]
+ansible_ssh_user=youransibleuser
+ansible_sudo=true
+target=enterprises
+digger_project_name=build-farm
+digger_platforms=android
+
+[master]
+youropenshiftdomain.com
