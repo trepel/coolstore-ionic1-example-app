@@ -1,3 +1,4 @@
 {
-  "backend_url": "admin.youropenshiftdomain.com"
+  "gateway_backend_url": "http://coolstore-gw-yourcoolstoreprojectname.youropenshiftdomain.com",
+  "webui_backend_url": "http://web-ui-yourcoolstoreprojectname.yourcoolstoredomain.com"
 }

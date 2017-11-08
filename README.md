@@ -4,14 +4,14 @@ This is example mobile application for [Coolstore](https://github.com/jbossdemoc
 
 ## Prerequisities
 
-Having Coolstore instance running is a prerequisite to fully excercise the app.
+Having Coolstore instance running is a prerequisite to fully excercise the app. The app only uses Catalog and Cart services thus having just minimal demo running is enough.
 Anoter prerequisite is to have NodeJS (and NPM) installed on your machine. Visit [NodeJS Download page](https://nodejs.org/en/download/) This app was tested with Node v6.11.3, newer versions should be ok to use as well.
 
 [Ioinc v1](http://ionicframework.com/docs/v1/overview/), [AngularJS](https://angularjs.org/), and [Cordova](https://cordova.apache.org/) frameworks were used during development. Follow the documentation of these three frameworks (Ionic and Cordova in particular) to set up an environment for running the app either in emulator or in the browser.
 
 ## Target the Coolstore backend
 
-To specify URL for various Coolstore microservices this app talks to change the value in `www/js/config.json` file. User `admin` is used as default when installing Coostore so it is prefilled there. Update as needed. Also replace the `youropenshiftdomain.com` with Openshift domain Coolstore instance is running on.
+To specify URLs for various Coolstore microservices this app talks to change the values in `www/js/config.json` file. The URLs vary based on your OpenShift domain and on whether you provisioned minimal or full installation (or anything between).
 
 ## Jump start
 - clone this repo and `cd` there
@@ -21,7 +21,7 @@ To specify URL for various Coolstore microservices this app talks to change the 
 
 ## Jump start using Ansible
 
-The `ansible` directory contains simple playbook that installs the Ionic, Cordova locally and runs the app in your browser.
+The `ansible` directory contains simple playbook that installs the Ionic, Cordova and runs the app in your browser. The difference using Ansible is that the Cordova and Ionic are installed locally.
 
 - clone this repo and `cd` there
 - `ansible-playbook -i ansible/inventoryFile -c local ansible/jump-start.yml`

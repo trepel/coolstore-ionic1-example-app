@@ -30,10 +30,11 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 
   $http.get(configUrl)
   .then(function(response){
-     var backendUrl = response.data.backend_url;
-     localStorage.setItem('catalogBaseUrl', 'http://catalog-coolstore-test-' + backendUrl + '/api/products');
-     localStorage.setItem('cartBaseUrl', 'http://cart-coolstore-test-' + backendUrl + '/api/cart');
-     localStorage.setItem('imgBaseUrl', 'http://web-ui-coolstore-test-' + backendUrl + '/app/imgs');
+     var gatewayUrl = response.data.gateway_backend_url;
+     var webUiUrl = response.data.webui_backend_url;
+     localStorage.setItem('catalogBaseUrl', gatewayUrl + '/api/products');
+     localStorage.setItem('cartBaseUrl', gatewayUrl + '/api/cart');
+     localStorage.setItem('imgBaseUrl', webUiUrl + '/app/imgs');
 
   },function(error){
     console.log(error);
