@@ -9,8 +9,8 @@ BUILD_CONFIG = params?.BUILD_CONFIG?.trim()                 // e.g. "Debug" or "
 CODE_SIGN_PROFILE_ID = params?.BUILD_CREDENTIAL_ID?.trim()   // e.g. "redhat-dist-dp"
 
 //     To hardcode values uncomment the lines below
-//CODE_SIGN_PROFILE_ID = "redhat-dist-dp"
-//BUILD_CONFIG = "debug"
+platform = "android"
+BUILD_CONFIG = "debug"
 
 // sample values commented below are for https://github.com/feedhenry-templates/sync-cordova-app
 /* ------------- use these to hardcode values in Jenkinsfile ---------------- */
