@@ -110,7 +110,7 @@ Prerequisite is to have `oc` command line tool installed. It is very similar to 
 
 [Digger Node.js client](https://github.com/aerogear/aerogear-digger-node-client) is nodejs jenkins client for Digger. To use for building the app follow the [documentation] (https://github.com/aerogear/aerogear-digger#build). To make it easier for you to build this app proceed with following steps
 - `npm install -g aerogear-digger-node-client`
-- `digger login http://jenkins-aerogear-digger.youropenshiftdomain.com --user=admin --password=password`
+- `digger login http://jenkins-aerogear-digger.youropenshiftdomain.com admin password`
   - the Jenkins URL depends on your Digger installation
 - `digger job create coolstore-ionic1-example-app https://github.com/trepel/coolstore-ionic1-example-app.git master`
   - modify the github URL here (e.g. if you forked this repo or want to build different app)
