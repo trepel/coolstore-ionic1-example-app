@@ -98,7 +98,7 @@ You can install Digger to build the application using [Ansible installer](https:
 - `git clone https://github.com/aerogear/aerogear-digger-installer.git`
     - for simplicity execute this command in root directory of this repository or update the relative path below accordingly
 - `cd aerogear-digger-installer`
-- `ansible-playbook -i ../digger/youropensfhitdomain/inventoryfile sample-build-playbook.yml -e project_name=aerogear-digger -e skip_tls=true -e jenkins_route_protocol=http -e add_public_key_automatically=true --skip-tags=provision-osx`
+- `ansible-playbook -i ../digger/youropensfhitdomain/inventoryfile sample-build-playbook.yml -e project_name=aerogear-digger -e skip_tls=true -e jenkins_route_protocol=http -e add_public_key_automatically=true --tags=deploy`
 
 Once installed you should be able to access Jenkins instance that has been created in `aerogear-digger` project. If so you can proceed with using [Digger Node.js client](https://github.com/aerogear/aerogear-digger-node-client) to create and build your application (see below).
 
