@@ -108,7 +108,7 @@ Prerequisite is to have `oc` command line tool installed. It is very similar to 
 
 ### Using digger Node.js to build your app
 
-[Digger Node.js client](https://github.com/aerogear/aerogear-digger-node-client) is nodejs jenkins client for Digger. To use for building the app follow the [documentation] (https://github.com/aerogear/aerogear-digger#build). To make it easier for you to build this app proceed with following steps
+[Digger Node.js client](https://github.com/aerogear/aerogear-digger-node-client) is nodejs jenkins client for Digger. To use for building the app follow the [documentation](https://github.com/aerogear/aerogear-digger#build). To make it easier for you to build this app proceed with following steps
 - `npm install -g aerogear-digger-node-client`
 - `digger login http://jenkins-aerogear-digger.youropenshiftdomain.com admin password`
   - the Jenkins URL depends on your Digger installation
