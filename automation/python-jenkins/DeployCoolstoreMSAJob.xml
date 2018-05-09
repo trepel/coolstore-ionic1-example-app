@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.10">
+  <actions/>
+  <description>Pipeline to deploy the simplest version of Coolstore demo</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <io.fabric8.jenkins.openshiftsync.BuildConfigProjectProperty plugin="openshift-sync@0.1.24">
+      <uid></uid>
+      <namespace></namespace>
+      <name></name>
+      <resourceVersion></resourceVersion>
+    </io.fabric8.jenkins.openshiftsync.BuildConfigProjectProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>coolstore_github_url</name>
+          <description>Your Coolstore Github URL.</description>
+          <defaultValue>https://github.com/jbossdemocentral/coolstore-microservice.git</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>coolstore_github_branch</name>
+          <description>Github branch you want to use.</description>
+          <defaultValue>1.2.x</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>openshift_project_name</name>
+          <description>Openshift Project Name to be used for Coolstore. If nothing specified the value will be &apos;coolstore-simple-&lt;BULD_NUMER&gt;&apos;</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>openshift_url</name>
+          <description>Openshift URL where you want to create Coolstore. This value is passed to &apos;oc login&apos; command.</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>openshift_username</name>
+          <description>Username argument for &apos;oc login&apos; command for Openshift cluster where you want to create Coolstore</description>
+          <defaultValue>admin</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>openshift_password</name>
+          <description>Password argument for &apos;oc login&apos; command for Openshift cluster where you want to create Coolstore</description>
+          <defaultValue>{AQAAABAAAAAQtxVlY+Ah+J3ILmBm8CQD7D8fTCVR3qBzaZoZyQ0kWqM=}</defaultValue>
+        </hudson.model.PasswordParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers/>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.30">
+    <script>try {
+
+  String openshiftUrl = openshift_url
+  String openshiftUsername = openshift_username
+  String openshiftPassword = openshift_password
+  String projectName = openshift_project_name ?: &apos;coolstore-simple-&apos; + env.BUILD_NUMBER
+  
+  String projectNameForExistenceCheck = openshift_project_name ?: &apos;coolstore-simple-&apos;
+  String projectNameForMessage = openshift_project_name ?: &apos;coolstore-simple-&lt;someNumber&gt;&apos;
+  
+  String githubUrl = coolstore_github_url
+  String branch = coolstore_github_branch
+
+  timeout(time: 10, unit: &apos;MINUTES&apos;) {
+      node {
+          
+        stage(&quot;Initialize&quot;) {
+            sh returnStatus: true, script: &apos;oc login &apos; + openshiftUrl + &apos; --insecure-skip-tls-verify --username &apos; + openshiftUsername + &apos; --password &apos; + openshiftPassword
+            String token = sh (returnStdout: true, script: &apos;oc whoami -t&apos;).trim()
+            if (!token) error(&apos;Log in to OSCP failed&apos;)
+        }
+        
+        stage(&quot;Clone Coolstore&quot;) {
+            dir (&apos;coolstore-microservice&apos;) {
+                git branch: branch, url: githubUrl
+                if (!fileExists (file: &apos;./openshift/coolstore-template.yaml&apos;)) error(&quot;Error cloning coolstore-microservice&quot;)
+            }
+        }
+        
+        stage(&quot;Deploy Coolstore&quot;) {
+            String output = sh returnStdout: true, script: &quot;oc projects&quot;
+            
+            if (!output.contains(projectNameForExistenceCheck)) {
+                sh returnStatus: true, script: &apos;oc new-project &apos; + projectName
+                sh returnStatus: true, script: &apos;oc project &apos; + projectName
+                sh returnStatus: true, script: &apos;oc process -f ./coolstore-microservice/openshift/coolstore-template.yaml &gt; tmp.json&apos;
+                sh returnStatus: true, script: &apos;oc create -f ./tmp.json&apos;
+            } else {
+                println &quot;Project named &apos;${projectNameForMessage}&apos; already exists, nothing to do&quot;
+            }
+        }
+      }
+
+  }
+} catch (err) {
+  echo &quot;Caught: ${err}&quot;
+  currentBuild.result = &apos;FAILURE&apos;
+  throw err
+}</script>
+    <sandbox>false</sandbox>
+  </definition>
+  <triggers/>
+</flow-definition>

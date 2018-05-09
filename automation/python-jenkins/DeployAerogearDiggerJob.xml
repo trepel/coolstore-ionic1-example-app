@@ -1,0 +1,185 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.10">
+  <actions/>
+  <description>This deploys Aerogear Digger to OpenShift</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <io.fabric8.jenkins.openshiftsync.BuildConfigProjectProperty plugin="openshift-sync@0.1.24">
+      <uid></uid>
+      <namespace></namespace>
+      <name></name>
+      <resourceVersion></resourceVersion>
+    </io.fabric8.jenkins.openshiftsync.BuildConfigProjectProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>digger_github_url</name>
+          <description>Your Aerogear Digger Github URL.</description>
+          <defaultValue>https://github.com/aerogear/aerogear-digger-installer.git</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>digger_github_branch</name>
+          <description>Github branch you want to use.</description>
+          <defaultValue>master</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>openshift_project_name</name>
+          <description>Openshift Project Name to be used for Aerogear Digger. If nothing specified the value will be &apos;aerogrear-digger-&lt;BULD_NUMER&gt;&apos;</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>openshift_url</name>
+          <description>Openshift URL where you want to create Aerogrear Digger. This value is passed to &apos;oc login&apos; command. E.g. https://myopenshift.com:8443</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>openshift_username</name>
+          <description>Username argument for &apos;oc login&apos; command for Openshift cluster where you want to create Aerogear Digger</description>
+          <defaultValue>admin</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>openshift_password</name>
+          <description>Password argument for &apos;oc login&apos; command for Openshift cluster where you want to create Aerogear Digger</description>
+          <defaultValue>{AQAAABAAAAAQN43PGdMPilFOygZmTS6zcx0dfrJA2Pzu0yUq3S1kABY=}</defaultValue>
+        </hudson.model.PasswordParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ansible_ssh_username</name>
+          <description>Username used for &apos;ssh&apos; to master node of Openshift where you want to create Aerogear Digger</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ansible_ssh_url</name>
+          <description>Hostname used for &apos;ssh&apos; to master node of your Openshift. If not specified it will be derived from openshift_url parameter - protocol &amp; port will be striped. E.g. if openshift_url is set to &apos;https://myopenshift.com:8443&apos; then &apos;myopenshift.com&apos; will be used.
+
+In other words the &apos;ssh &lt;ansible_ssh_username&gt;@myopenshift.com&apos; command must work. No password must be required to ssh there!</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.PasswordParameterDefinition>
+          <name>ansible_ssh_private_key</name>
+          <description>Private key to be used for ansible to ssh to &lt;ansible_ssh_url&gt;. The corresponding public key needs to be added to /home/&lt;ansible_ssh_username&gt;/.ssh/authorized_keys so that no password is required when Ansible ssh-es there.
+
+If using ansible_ssh_credentials_id then this can be left blank</description>
+          <defaultValue>{AQAAABAAAAAQ9NfQjxi4svclhuOe2N/MmQW6yJugbYTQueJthQcvt1Y=}</defaultValue>
+        </hudson.model.PasswordParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>ansible_ssh_credentials_id</name>
+          <description>If you do not want to specify your &apos;ansible_ssh_private_key&apos; via parameter you can create SSH Credential in Jenkins and provide Credentials ID here. See &apos;Configure Jenkins&apos; pipeline to help you create SSH Credentials. Leave this blank in you want to use ansible_ssh_private_key instead.
+
+It still holds that Ansible requires password-less SSH access to master node of OpenShift where Aerogear Digger is going to be installed. Thus the corresponding public key needs to be added to /home/&lt;ansible_ssh_username&gt;/.ssh/authorized_keys so that no password is required.</description>
+          <defaultValue>ssh-credentials-id</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers/>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.30">
+    <script>try {
+
+  String openshiftUrl = openshift_url
+  String openshiftUsername = openshift_username
+  String openshiftPassword = openshift_password
+  
+  String projectName = openshift_project_name ?: &apos;aerogear-digger-&apos; + env.BUILD_NUMBER
+  String projectNameForExistenceCheck = openshift_project_name ?: &apos;aerogear-digger-&apos;
+  String projectNameForMessage = openshift_project_name ?: &apos;aerogear-digger-&lt;someNumber&gt;&apos;  
+  
+  String githubUrl = digger_github_url
+  String branch = digger_github_branch
+  String ansibleSshUsername = ansible_ssh_username
+  String ansibleSshUrl = ansible_ssh_url ?: new URL(openshiftUrl).host
+  String ansibleSshPrivateKey = ansible_ssh_private_key
+  String ansibleSshCredentialsId = ansible_ssh_credentials_id
+
+  timeout(time: 30, unit: &apos;MINUTES&apos;) {
+      def ansibleSlaveContainer = containerTemplate(
+            name: &apos;jnlp&apos;,
+            image: &apos;docker.io/fhwendy/jenkins-slave-ansible&apos;,
+            args: &apos;${computer.jnlpmac} ${computer.name}&apos;,
+            ttyEnabled: false
+      )
+    
+      podTemplate(label: &apos;slave-ansible&apos;, cloud: &quot;openshift&quot;, containers: [ansibleSlaveContainer]) {
+      node (&quot;slave-ansible&quot;) {
+      
+        stage(&quot;Initialize&quot;) {
+            sh returnStatus: true, script: &apos;oc login &apos; + openshiftUrl + &apos; --insecure-skip-tls-verify --username &apos; + openshiftUsername + &apos; --password &apos; + openshiftPassword
+            String token = sh (returnStdout: true, script: &apos;oc whoami -t&apos;).trim()
+            if (!token) error(&apos;Log in to OSCP failed&apos;)
+        }
+        
+        stage(&quot;Clone Aerogear Digger&quot;) {
+            dir (&apos;aerogear-digger&apos;) {
+                git branch: branch, url: githubUrl
+                if (!fileExists (file: &apos;./sample-build-playbook.yml&apos;)) error(&quot;Error cloning aerogrear-digger&quot;)
+            }
+        }
+        
+        stage(&quot;Create Inventory File&quot;) {
+            
+            String privateKeyLocationConfig = &apos;&apos;
+            if (ansibleSshPrivateKey &amp;&amp; !ansibleSshCredentialsId) {
+                privateKeyLocationConfig = &apos;\nansible_ssh_private_key_file=&apos; + env.WORKSPACE + &apos;/tmp_id_rsa&apos;
+            } else {
+                println &apos;Location to ssh privae key not added to inventory file, --key-file will be used&apos;
+            }
+            
+            dir (&apos;inventory-file-dir&apos;) {
+                String content = &apos;[OSEv3:children]\nmaster\n\n[OSEv3:vars]\nansible_ssh_user=&apos; + ansibleSshUsername +
+                &apos;&apos; + privateKeyLocationConfig + &apos;\n\n[master]\n&apos; + ansibleSshUrl
+                println content
+                writeFile encoding: &apos;UTF-8&apos;, file: &apos;./inventoryFile&apos;, text: content
+                dir (&apos;group_vars&apos;) {
+                    content = &apos;oc_user: &apos; + openshiftUsername + &apos;\noc_password: &apos; + openshiftPassword
+                    writeFile encoding: &apos;UTF-8&apos;, file: &apos;./OSEv3.yml&apos;, text: content
+                }
+            }
+        }
+        
+        stage(&quot;Store private key&quot;) {
+            if(ansibleSshPrivateKey &amp;&amp; !ansibleSshCredentialsId) {
+                writeFile encoding: &apos;UTF-8&apos;, file: env.WORKSPACE + &apos;/tmp_id_rsa&apos;, text: ansibleSshPrivateKey
+                sh returnStatus: true, script: &apos;chmod 600 ./tmp_id_rsa&apos;
+            } else {
+                println &apos;SSH private key not stored, jenkins credentials will be used&apos;
+            }
+        }
+
+        stage(&quot;Deploy Aerogear Digger&quot;) {
+            if (ansibleSshCredentialsId) {
+                withCredentials([sshUserPrivateKey(credentialsId: ansible_ssh_credentials_id, keyFileVariable: &apos;PRIVATE_KEY&apos;)]) {
+                    String output = sh returnStdout: true, script: &quot;oc projects&quot;
+                    
+                    if (!output.contains(projectNameForExistenceCheck)) {
+                        println &apos;ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ./inventory-file-dir/inventoryFile --key-file $PRIVATE_KEY ./aerogear-digger/sample-build-playbook.yml -e &quot;project_name=&apos; + projectName + &apos; skip_tls=true jenkins_route_protocol=http add_public_key_automatically=true&quot;&apos; + &apos; --tags=deploy&apos;
+                        sh returnStatus: true, script: &quot;ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ./inventory-file-dir/inventoryFile --key-file &apos;$PRIVATE_KEY&apos;&quot; + &apos; ./aerogear-digger/sample-build-playbook.yml -e &quot;project_name=&apos; + projectName + &apos; skip_tls=true jenkins_route_protocol=http add_public_key_automatically=true&quot;&apos; + &apos; --tags=deploy&apos;
+                    } else {
+                        println &quot;Project named &apos;${projectNameForMessage}&apos; already exists, nothing to do&quot;
+                    }
+                }
+            } else if(ansibleSshPrivateKey) {
+                String output = sh returnStdout: true, script: &quot;oc projects&quot;
+                
+                if (!output.contains(projectNameForExistenceCheck)) {
+                    println &apos;ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ./inventory-file-dir/inventoryFile ./aerogear-digger/sample-build-playbook.yml -e &quot;project_name=&apos; + projectName + &apos; skip_tls=true jenkins_route_protocol=http add_public_key_automatically=true&quot;&apos; + &apos; --tags=deploy&apos;
+                    sh returnStatus: true, script: &apos;ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ./inventory-file-dir/inventoryFile ./aerogear-digger/sample-build-playbook.yml -e &quot;project_name=&apos; + projectName + &apos; skip_tls=true jenkins_route_protocol=http add_public_key_automatically=true&quot;&apos; + &apos; --tags=deploy&apos;
+                } else {
+                    println &quot;Project named &apos;${projectNameForMessage}&apos; already exists, nothing to do&quot;
+                }
+            }
+        }
+
+      } // node
+      } // podTemplate
+
+  }
+} catch (err) {
+  echo &quot;Caught: ${err}&quot;
+  currentBuild.result = &apos;FAILURE&apos;
+  throw err
+}</script>
+    <sandbox>false</sandbox>
+  </definition>
+  <triggers/>
+</flow-definition>

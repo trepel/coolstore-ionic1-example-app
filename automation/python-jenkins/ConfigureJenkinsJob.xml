@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.10">
+  <actions/>
+  <description>1. This installs credentials-binding plugin&#xd;
+2. This creates ssh credentials&#xd;
+&#xd;
+It does nothing if the plugin and credentials are in place already</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <io.fabric8.jenkins.openshiftsync.BuildConfigProjectProperty plugin="openshift-sync@0.1.24">
+      <uid></uid>
+      <namespace></namespace>
+      <name></name>
+      <resourceVersion></resourceVersion>
+    </io.fabric8.jenkins.openshiftsync.BuildConfigProjectProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>CREDENTIALS_ID</name>
+          <description>ID of Credentials about to be created</description>
+          <defaultValue>ssh-credentials-id</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>DESCRIPTION</name>
+          <description>Optional description of the Credentials</description>
+          <defaultValue>SSH Credentials</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>USERNAME</name>
+          <description>SSH username of credentials</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.TextParameterDefinition>
+          <name>PRIVATE_KEY</name>
+          <description>SSH private key for credentials</description>
+          <defaultValue></defaultValue>
+        </hudson.model.TextParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers/>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.30">
+    <script>import jenkins.model.*
+import com.cloudbees.plugins.credentials.*
+import com.cloudbees.plugins.credentials.common.*
+import com.cloudbees.plugins.credentials.domains.*
+import com.cloudbees.plugins.credentials.impl.*
+import com.cloudbees.jenkins.plugins.sshcredentials.impl.*
+import hudson.plugins.sshslaves.*;
+
+try {
+    timeout(time: 30, unit: &apos;MINUTES&apos;) {
+        stage(&quot;Installing Credentials Binding Plugin&quot;) {
+            def plugins = Jenkins.instance.pluginManager.plugins
+            Boolean isCredentialsBindingPluginInstalled = false
+            for (plugin in plugins) {
+                if (plugin.getShortName().contains(&apos;credentials-binding&apos;)) {
+                    isCredentialsBindingPluginInstalled = true
+                    break;
+                }
+            }
+            plugins = null
+            
+            if (!isCredentialsBindingPluginInstalled) {
+                println &apos;Installing credentials-binding plugin&apos;
+                def plugin = Jenkins.instance.updateCenter.getPlugin(&quot;credentials-binding&quot;)
+                plugin.deploy(true)
+                plugin = null
+            } else {
+                println &apos;credentials-binding plugin already installed, nothing to do&apos;
+            }
+        }
+            
+            stage(&apos;Adding Jenkins SSH Credentials&apos;) {
+                domain = Domain.global()
+                store = Jenkins.instance.getExtensionList(&apos;com.cloudbees.plugins.credentials.SystemCredentialsProvider&apos;)[0].getStore()
+                
+                credId = CREDENTIALS_ID
+                username = USERNAME
+                privateKeyStr = &quot;${PRIVATE_KEY}&quot;
+                privateKeySource = new BasicSSHUserPrivateKey.DirectEntryPrivateKeySource(privateKeyStr)
+                description = DESCRIPTION
+                
+                privateKey = new BasicSSHUserPrivateKey(
+                        CredentialsScope.GLOBAL,
+                        credId,
+                        username,
+                        privateKeySource,
+                        &quot;&quot;,
+                        description
+                )
+
+                Boolean isCredentialsCreatedAlready = false
+                def creds = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
+                        com.cloudbees.plugins.credentials.Credentials.class,
+                        Jenkins.instance,
+                        null,
+                        null
+                );
+                for (c in creds) {
+                    if (c.id.contains(credId)) {
+                        isCredentialsCreatedAlready = true
+                        break
+                    }
+                }
+                creds = null
+                
+                if (!isCredentialsCreatedAlready) {
+                    store.addCredentials(domain, privateKey)
+                } else {
+                    println &quot;Credentials already created, nothing to do: $credId&quot;
+                }
+                
+                // null stuff to prevent serialization errors
+                store = null
+                domain = null
+                privateKey = null
+                privateKeySource = null
+            }
+        
+    }// timeout
+} catch(err) {
+    echo &quot;Caught ${err}&quot;
+    currentBuild.result = &apos;FAILURE&apos;
+    throw err
+}</script>
+    <sandbox>false</sandbox>
+  </definition>
+  <triggers/>
+</flow-definition>
