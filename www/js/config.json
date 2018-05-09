@@ -1,4 +1,1 @@
-{
-  "gateway_backend_url": "http://coolstore-gw-yourcoolstoreprojectname.youropenshiftdomain.com",
-  "webui_backend_url": "http://web-ui-yourcoolstoreprojectname.yourcoolstoredomain.com"
-}
+{ "gateway_backend_url": "http://coolstore-gw-coolstore-02.coolstore.skunkhenry.com/", "webui_backend_url" : "http://web-ui-coolstore-02.coolstore.skunkhenry.com/" }
