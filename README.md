@@ -36,6 +36,10 @@ This is standard Ioinc Cordova application thus there is nothing special to do t
 
 Note you might need to `sudo` some commands. This also applies for the rest of the commands mentioned below. It creates `android-debug.apk` file you can download and install on emulator or real device.
 
+## Automation
+
+You can skip reading following sections and go directly to `automation/python-jenkins` to get things done quickly. Jenkins pipelines that automate many of following steps are there.
+
 ### Installing Java
 
 Java is a programming language for Android application. You need Java compiler to build Android applications thus be sure to install Java SDK and not JRE only. For installation visit [download page](http://www.oracle.com/technetwork/java/javase/downloads).
