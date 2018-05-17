@@ -7,6 +7,7 @@
 def platform = params?.PLATFORM?.trim()                      // e.g. "ios" or "android"
 BUILD_CONFIG = params?.BUILD_CONFIG?.trim()                 // e.g. "Debug" or "Release"
 CODE_SIGN_PROFILE_ID = params?.BUILD_CREDENTIAL_ID?.trim()   // e.g. "redhat-dist-dp"
+// COOLSTORE_GATEWAY_URL = params?.COOLSTORE_GATEWAY_URL
 
 //     To hardcode values uncomment the lines below
 platform = "android"
@@ -19,8 +20,18 @@ CLEAN = true                          // Do a clean build and sign
 
 
 node(platform) {
+
+    parameters {
+        string(name: 'COOLSTORE_GATEWAY_URL', description: 'URL for Coolstore Gateway')
+    }
+
     stage("Checkout") {
         checkout scm
+    }
+
+    stage("Configure") {
+        String config = '{ "gateway_backend_url": "' + COOLSTORE_GATEWAY_URL + '", "webui_backend_url" : "' + COOLSTORE_GATEWAY_URL.replaceAll('coolstore-gw-', 'web-ui-') + '" }'
+        writeFile encoding: 'UTF-8', file: './www/js/config.json', text: config
     }
 
     stage("Prepare") {
