@@ -30,7 +30,7 @@
         <hudson.model.PasswordParameterDefinition>
           <name>DIGGER_JENKINS_PASSWORD</name>
           <description>Password for Aerogear Digger Jenkins user. If you deployed Aerogear Digger using &apos;Deploy Aerogear Digger&apos; or you used https://github.com/aerogear/aerogear-digger-installer, the password should be just &apos;password&apos;</description>
-          <defaultValue>{AQAAABAAAAAQfjer+aaFzopWVL2p/BcLw3xqsZVqvJgd3nIjYdkpyMw=}</defaultValue>
+          <defaultValue>{AQAAABAAAABAxNzqe7PTTBeFYq2ZsheN2L0sJStOd5UWpk0ja8n8813v8ZH1E6vgoL/8D1VPW9SzhO54btoepLLsaBUBeQ525LooELJqhNuuUFYryx7bDEQ=}</defaultValue>
         </hudson.model.PasswordParameterDefinition>
         <hudson.model.StringParameterDefinition>
           <name>COOLSTORE_MOBILE_APP_GITHUB_URL</name>
@@ -42,21 +42,6 @@
           <description>Branch of Coolstore Mobile App to be used</description>
           <defaultValue>master</defaultValue>
         </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>COOLSTORE_MOBILE_APP_NEW_BRANCH</name>
-          <description>In this branch the URL for Coolstore gateway will be configured and stored. Consequently this branch will be used for building the mobile app. If the branch already exists the configuration update is skipped and the branch is used as is</description>
-          <defaultValue>config-update</defaultValue>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>GITHUB_USERNAME</name>
-          <description>Github Username to be used for pushing the mobile app configuration change.</description>
-          <defaultValue></defaultValue>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.PasswordParameterDefinition>
-          <name>GITHUB_TOKEN</name>
-          <description>Github Personal Access Token - read/write to public repositories is enough (public_repo)</description>
-          <defaultValue>{AQAAABAAAAAQ+5aJKxB+gsISjXIv97f7fgRsRO8V2PnabeuLvp3vdtY=}</defaultValue>
-        </hudson.model.PasswordParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
     <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
@@ -89,58 +74,46 @@ try {
                 }
             }
             
-            stage(&quot;Configure Coolstore Mobile Ionic1 App&quot;) {
+            stage(&quot;Create Job on Digger and add Coolstore Gateway URL parameter&quot;) {
                 
-                dir (&apos;coolstore-ionic1-example-app&apos;) {
-                    String output = sh returnStdout: true, script: &quot;git branch -a&quot;
-                    println output
-                    
-                    if(!output.contains(&quot;origin/$COOLSTORE_MOBILE_APP_NEW_BRANCH&quot;)) {
-                        String config = &apos;{ &quot;gateway_backend_url&quot;: &quot;&apos; + COOLSTORE_GATEWAY_URL + &apos;&quot;, &quot;webui_backend_url&quot; : &quot;&apos; + COOLSTORE_GATEWAY_URL.replaceAll(&apos;coolstore-gw-&apos;, &apos;web-ui-&apos;) + &apos;&quot; }&apos;
-                        println config
-                        writeFile encoding: &apos;UTF-8&apos;, file: &apos;./www/js/config.json&apos;, text: config
-                        
-                        String githubUrl = COOLSTORE_MOBILE_APP_GITHUB_URL;
-                        githubUrl = githubUrl.replace(&apos;https://&apos;, &apos;&apos;)
-                        env.githubUrl = githubUrl
-    
-                        sh &apos;&apos;&apos;
-                            git config user.name $GITHUB_USERNAME
-                            git config user.email $GITHUB_USERNAME@redhat.com
-                            git checkout -b $COOLSTORE_MOBILE_APP_NEW_BRANCH
-                            git add -u
-                            git commit -m &quot;Updated backend URL configuration&quot;
-                            git push https://$GITHUB_USERNAME:$GITHUB_TOKEN@$githubUrl $COOLSTORE_MOBILE_APP_NEW_BRANCH
-                        &apos;&apos;&apos;
-                    } else {
-                        println &quot;The branch &apos;$COOLSTORE_MOBILE_APP_NEW_BRANCH&apos; already exists, it will be used as is&quot;
-                    }
-                }
-            }
-            
-            stage(&quot;Create Job on Digger&quot;) {
+                // Create job
                 sh &apos;&apos;&apos;
                     npm install -g aerogear-digger-node-client
                     digger login $DIGGER_JENKINS_URL $DIGGER_JENKINS_USER $DIGGER_JENKINS_PASSWORD
-                    digger job create coolstore-ionic1-example-app $COOLSTORE_MOBILE_APP_GITHUB_URL $COOLSTORE_MOBILE_APP_NEW_BRANCH
+                    digger job create coolstore-ionic1-example-app $COOLSTORE_MOBILE_APP_GITHUB_URL $COOLSTORE_MOBILE_APP_BRANCH
+                &apos;&apos;&apos;
+                
+                // Add Coolstore Gateway parameter with default value as desired
+                sh &apos;&apos;&apos;
+                    curl -X GET -u $DIGGER_JENKINS_USER:$DIGGER_JENKINS_PASSWORD $DIGGER_JENKINS_URL/job/coolstore-ionic1-example-app/config.xml -o config.xml
+                &apos;&apos;&apos;
+                config = readFile encoding: &apos;UTF-8&apos;, file: &apos;./config.xml&apos;
+                config = config.replaceFirst(&apos;&lt;/properties&gt;&apos;,
+                &apos;&lt;hudson.model.ParametersDefinitionProperty&gt;\n&lt;parameterDefinitions&gt;\n&lt;hudson.model.StringParameterDefinition&gt;\n&lt;name&gt;COOLSTORE_GATEWAY_URL&lt;/name&gt;\n&lt;description&gt;URL for Coolstore Gateway&lt;/description&gt;\n&lt;defaultValue&gt;&apos; + COOLSTORE_GATEWAY_URL + &apos;&lt;/defaultValue&gt;\n&lt;/hudson.model.StringParameterDefinition&gt;\n&lt;/parameterDefinitions&gt;\n&lt;/hudson.model.ParametersDefinitionProperty&gt;\n&lt;/properties&gt;&apos;)
+                writeFile encoding: &apos;UTF-8&apos;, file: &apos;config.xml&apos;, text: config
+                sh &apos;&apos;&apos;
+                curl -X POST -u $DIGGER_JENKINS_USER:$DIGGER_JENKINS_PASSWORD $DIGGER_JENKINS_URL/job/coolstore-ionic1-example-app/config.xml --data-binary @config.xml
                 &apos;&apos;&apos;
             }
             
             stage(&quot;Build Mobile Application&quot;) {
-                String output = sh returnStdout: true, script: &apos;digger job build coolstore-ionic1-example-app&apos;
-                Matcher m = Pattern.compile(/ ([0-9]+)&apos;/).matcher(output)
-                if (m.getCount() == 0) error(&apos;Cannot find Build Number in &quot;&apos; + output + &apos;&quot;&apos;)
-                buildNumber = m[0][1]
-                // needed due to serialization requirement
-                m = null
-                println buildNumber
+                sh &apos;&apos;&apos;
+                curl -X POST -u $DIGGER_JENKINS_USER:$DIGGER_JENKINS_PASSWORD $DIGGER_JENKINS_URL/job/coolstore-ionic1-example-app/buildWithParameters --data-urlencode json=&apos;{}&apos;
+                &apos;&apos;&apos;
+                buildNumber = sh returnStdout: true, script: &apos;curl -X GET -u $DIGGER_JENKINS_USER:$DIGGER_JENKINS_PASSWORD $DIGGER_JENKINS_URL/job/coolstore-ionic1-example-app/lastBuild/buildNumber&apos;
             }
             
             stage(&quot;Wait Till Job Finishes&quot;) {
                 String output = null
+                String log = null
                 waitUntil {
+                    log = sh returnStdout: true, script: &apos;digger log coolstore-ionic1-example-app &apos; + buildNumber
                     output = sh returnStdout: true, script: &apos;digger artifact coolstore-ionic1-example-app &apos; + buildNumber
-                    return output.contains(&quot;Build artifacts:&quot;)
+                    if (output.contains(&quot;Build artifacts:&quot;)) return true
+                    
+                    if (log.contains(&quot;Finished streaming logs&quot;)) {
+                        error(&quot;Build failed because triggered Digger build failed&quot;)
+                    }
                 }
                 
                 output = output.replaceAll(&apos;^.*?\n&apos;, &apos;&apos;)
