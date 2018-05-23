@@ -14,9 +14,9 @@ See [this Stack Overflow question](https://stackoverflow.com/questions/45466090/
 
 ## How to use pipeline jobs
 
-After pipelie jobs are successfully created, trigger 'Configure Jenkins' pipeline first. The restart of Jenkins might be required afterwards. Then continue deploying Aerogear Digger and Coolstore MSA - order does not matter here. As a last step trigger 'Build Coolstore Mobile App'.
+After pipelie jobs are successfully created, trigger 'Configure Jenkins' pipeline first. Correction of some plugin versions and restart of Jenkins might be required afterwards. Then continue by deploying Aerogear Digger and Coolstore MSA - order does not matter here. As a last step trigger 'Build Coolstore Mobile App'.
 
-Android binary (.apk) is stored in Jenkins as Last Successful Artifact. You can download it and install on physical device and emulator.
+Android binary (.apk) is stored in Jenkins as Last Successful Artifact. You can download it and install on physical device or emulator.
 
 ## Troubleshooting
 
