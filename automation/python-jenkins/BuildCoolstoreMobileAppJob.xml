@@ -101,8 +101,8 @@ try {
                 curl -X POST -u $DIGGER_JENKINS_USER:$DIGGER_JENKINS_PASSWORD $DIGGER_JENKINS_URL/job/coolstore-ionic1-example-app/buildWithParameters --data-urlencode json=&apos;{}&apos;
                 &apos;&apos;&apos;
                 
-                println &apos;Sleeping for 5 seconds so that the job build can start and build number is available for retrieval&apos;
-                sleep 5
+                println &apos;Sleeping for 10 seconds so that the job build can start and build number is available for retrieval&apos;
+                sleep 10
                 
                 buildNumber = sh returnStdout: true, script: &apos;curl -X GET -u $DIGGER_JENKINS_USER:$DIGGER_JENKINS_PASSWORD $DIGGER_JENKINS_URL/job/coolstore-ionic1-example-app/lastBuild/buildNumber&apos;
                 
