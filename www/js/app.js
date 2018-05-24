@@ -32,9 +32,10 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
   .then(function(response){
      var gatewayUrl = response.data.gateway_backend_url;
      var webUiUrl = response.data.webui_backend_url;
-     localStorage.setItem('catalogBaseUrl', gatewayUrl + '/api/products');
-     localStorage.setItem('cartBaseUrl', gatewayUrl + '/api/cart');
-     localStorage.setItem('imgBaseUrl', webUiUrl + '/app/imgs');
+
+     localStorage.setItem('catalogBaseUrl', gatewayUrl.replace(/\/$/, "") + '/api/products');
+     localStorage.setItem('cartBaseUrl', gatewayUrl.replace(/\/$/, "") + '/api/cart');
+     localStorage.setItem('imgBaseUrl', webUiUrl.replace(/\/$/, "") + '/app/imgs');
 
   },function(error){
     console.log(error);
