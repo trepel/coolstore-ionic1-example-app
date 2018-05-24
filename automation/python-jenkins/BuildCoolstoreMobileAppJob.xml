@@ -138,9 +138,15 @@ try {
             
             stage(&quot;Wait Till Job Finishes&quot;) {
                 String output = null
+                String log = null
                 waitUntil {
+                    log = sh returnStdout: true, script: &apos;digger log coolstore-ionic1-example-app &apos; + buildNumber
                     output = sh returnStdout: true, script: &apos;digger artifact coolstore-ionic1-example-app &apos; + buildNumber
-                    return output.contains(&quot;Build artifacts:&quot;)
+                    if (output.contains(&quot;Build artifacts:&quot;)) return true
+                    
+                    if (log.contains(&quot;Finished streaming logs&quot;)) {
+                        error(&quot;Build failed because triggered Digger build also failed&quot;)
+                    }
                 }
                 
                 output = output.replaceAll(&apos;^.*?\n&apos;, &apos;&apos;)
